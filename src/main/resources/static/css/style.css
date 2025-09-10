@@ -1,0 +1,22 @@
+body {
+    background-color: #f8f9fa;
+    color: #343a40;
+}
+.card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform .2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.card-title {
+    color: #6c757d;
+}
+.card-text {
+    font-weight: bold;
+    color: #007bff;
+}
+h1, h2 {
+    font-weight: 300;
+}
