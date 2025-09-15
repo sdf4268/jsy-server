@@ -37,15 +37,15 @@ public class AirSensorService {
         sensorData.setTemp(dto.getTemp());
         sensorData.setHumi(dto.getHumi());
         sensorData.setCo2(dto.getCo2());
-        sensorData.setDust10(dto.getDust1_0());
-        sensorData.setDust25(dto.getDust2_5());
-        sensorData.setDust100(dto.getDust10());
-        sensorData.setRaw03(dto.getRaw0_3());
-        sensorData.setRaw05(dto.getRaw0_5());
-        sensorData.setRaw10(dto.getRaw1_0());
-        sensorData.setRaw25(dto.getRaw2_5());
-        sensorData.setRaw50(dto.getRaw5_0());
-        sensorData.setRaw100(dto.getRaw10_0());
+        sensorData.setDust10(dto.getDust10());
+        sensorData.setDust25(dto.getDust25());
+        sensorData.setDust100(dto.getDust100());
+        sensorData.setRaw03(dto.getRaw03());
+        sensorData.setRaw05(dto.getRaw05());
+        sensorData.setRaw10(dto.getRaw10());
+        sensorData.setRaw25(dto.getRaw25());
+        sensorData.setRaw50(dto.getRaw50());
+        sensorData.setRaw100(dto.getRaw100());
 
         // 4. Repository를 통해 데이터베이스에 저장
         airSensorRepository.save(sensorData);

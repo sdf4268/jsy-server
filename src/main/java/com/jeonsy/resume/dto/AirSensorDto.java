@@ -12,13 +12,13 @@ public class AirSensorDto {
     private double temp;
     private double humi;
     private int co2;
-    private int dust1_0;
-    private int dust2_5;
     private int dust10;
-    private int raw0_3;
-    private int raw0_5;
-    private int raw1_0;
-    private int raw2_5;
-    private int raw5_0;
-    private int raw10_0;
+    private int dust25;
+    private int dust100;
+    private int raw03;
+    private int raw05;
+    private int raw10;
+    private int raw25;
+    private int raw50;
+    private int raw100;
 }
