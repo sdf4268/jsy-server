@@ -1,22 +1,51 @@
+/* ❗️추가된 핵심 코드: html과 body가 화면 전체 높이를 차지하도록 설정 */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* body 자체의 스크롤바는 숨김 */
+}
+
+/* 사용자 기존 스타일 + flexbox 레이아웃 */
 body {
     background-color: #f8f9fa;
     color: #343a40;
+    font-family: Arial, sans-serif;
+    display: flex; 
 }
+
 .card {
     border: none;
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     transition: transform .2s;
 }
+
 .card:hover {
     transform: translateY(-5px);
 }
+
 .card-title {
     color: #6c757d;
 }
+
 .card-text {
     font-weight: bold;
     color: #007bff;
 }
+
 h1, h2 {
     font-weight: 300;
+}
+
+/* 사이드바와 메인 콘텐츠 스타일 */
+#sidebar {
+    flex-shrink: 0;
+    width: 280px;
+    height: 100vh; /* 사이드바도 전체 화면 높이를 차지 */
+}
+
+#main-content {
+    flex-grow: 1;
+    height: 100vh; /* 메인 콘텐츠도 전체 화면 높이를 차지 */
+    overflow-y: auto; /* 콘텐츠가 길어지면 이 영역만 스크롤 생성 */
 }
