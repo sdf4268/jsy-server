@@ -94,4 +94,6 @@ public class SmartThingsTokenService {
 	public Optional<T_SMARTTHINGS_TOKEN> getLatestToken() {
 		return tokenRepository.findTopByOrderByCreatedAtDesc();
 	}
+	
+	
 }

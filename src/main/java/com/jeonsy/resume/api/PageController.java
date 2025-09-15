@@ -10,4 +10,9 @@ public class PageController {
     public String airsensor() {
         return "airsensor"; // /resources/templates/dashboard.html 파일을 보여준다
     }
+    
+    @GetMapping("/st-devices")
+    public String smartThingsDevicesPage() {
+        return "st-devices"; // templates/st-devices.html 파일을 찾아서 보여줍니다.
+    }
 }
