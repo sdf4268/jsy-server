@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jeonsy.resume.dto.AirSensorDto;
 import com.jeonsy.resume.dto.DeviceDto;
+import com.jeonsy.resume.dto.DeviceRegistrationDto;
 import com.jeonsy.resume.dto.ObdDataDto;
 import com.jeonsy.resume.entity.T_AIRSENSOR;
 import com.jeonsy.resume.service.AirSensorService;
@@ -90,6 +91,17 @@ public class DeviceController {
             // 3. 서비스 로직 수행 중 오류 발생 시 에러 메시지를 전달합니다.
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching SmartThings devices: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/smartthings/register-device")
+    public ResponseEntity<String> registerDevice(@RequestBody DeviceRegistrationDto registrationDto) {
+        try {
+        	smartThingsApiService.registerAirConditioner(registrationDto);
+            return ResponseEntity.ok("Device registered successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error registering device: " + e.getMessage());
         }
     }
 }
