@@ -8,7 +8,8 @@ Spring Boot를 기반으로 구축된 개인용 IoT 데이터 수집 및 시각�
 3. 삼성 Smartthings의 OAuth 2.0을 위한 토큰을 생성한 후 갱신하기 위한 API가 포함되어 있습니다.
 4. 삼성 Smartthings의 Bearer Token을 통한 에어컨 리스트 확인, 데이터 수집, 제어 기능을 포함하고 있습니다.
 
-<img width="986" height="717" alt="image" src="https://github.com/user-attachments/assets/8e586d30-462e-42ab-bce5-6b5870da438f">
+<img width="1175" height="769" alt="image" src="https://github.com/user-attachments/assets/717210ae-275d-4725-9d86-ca8b5d4266f9" />
+
 
 ### 주요 기능
 - RESTful API 서버: 외부 IoT 디바이스로부터 센서 데이터를 수신하여 데이터베이스에 저장하는 API 엔드포인트 제공
