@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.jeonsy.resume.dto.DeviceDto;
@@ -26,6 +28,8 @@ import okhttp3.Response;
 @RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 만들어줍니다.
 public class SmartThingsApiService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SmartThingsApiService.class);
+
     private final SmartThingsTokenService tokenService;
     
     private final LabelRepository labelRepository;
@@ -36,7 +40,7 @@ public class SmartThingsApiService {
     	Set<String> registeredDeviceIds = labelRepository.findAll().stream()
                 .map(T_LABEL::getDeviceId)
                 .collect(Collectors.toSet());
-    	
+
         // 1. 토큰 가져오기 (기존과 동일)
         Optional<T_SMARTTHINGS_TOKEN> tokenOpt = tokenService.getLatestToken();
         if (tokenOpt.isEmpty()) {

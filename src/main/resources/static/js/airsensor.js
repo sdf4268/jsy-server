@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // HTML 요소 가져오기
     const deviceIdDisplay = document.getElementById('device-id-display');
     const datePicker = document.getElementById('date-picker');
-    // ... (이하 카드 요소들은 이전과 동일)
     const latestTemp = document.getElementById('latest-temp');
     const latestHumi = document.getElementById('latest-humi');
     const latestCo2 = document.getElementById('latest-co2');
@@ -16,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Chart.js 초기화 (이전과 동일)
     const ctx = document.getElementById('daily-chart').getContext('2d');
-    let dailyChart = new Chart(ctx, { /* ... 차트 옵션은 이전과 동일 ... */ 
+    let dailyChart = new Chart(ctx, { 
         type: 'line', data: { labels: [], datasets: [ { label: '온도 (°C)', data: [], borderColor: 'rgba(255, 99, 132, 1)', yAxisID: 'y_temp', }, { label: '습도 (%)', data: [], borderColor: 'rgba(54, 162, 235, 1)', yAxisID: 'y_humi', }, { label: '미세먼지 (PM2.5)', data: [], borderColor: 'rgba(75, 192, 192, 1)', yAxisID: 'y_dust', } ] }, options: { responsive: true, scales: { x: { display: true, title: { display: true, text: '시간' } }, y_temp: { type: 'linear', display: true, position: 'left', title: { display: true, text: '온도 (°C)' } }, y_humi: { type: 'linear', display: true, position: 'right', title: { display: true, text: '습도 (%)' }, grid: { drawOnChartArea: false } }, y_dust: { type: 'linear', display: false, } } }
     });
     

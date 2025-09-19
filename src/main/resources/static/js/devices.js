@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         devices.forEach(device => {
-            const buttonHtml = device.isRegistered 
+            const buttonHtml = device.registered 
                 ? `<button class="btn btn-secondary btn-sm" disabled>등록됨</button>`
                 : `<button class="btn btn-success btn-sm register-btn" 
                             data-device-id="${device.deviceId}" 
