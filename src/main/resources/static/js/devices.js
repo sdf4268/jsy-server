@@ -36,11 +36,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         devices.forEach(device => {
-            const buttonHtml = device.registered 
-                ? `<button class="btn btn-secondary btn-sm" disabled>등록됨</button>`
-                : `<button class="btn btn-success btn-sm register-btn" 
-                            data-device-id="${device.deviceId}" 
-                            data-label="${device.label}">등록하기</button>`;
+			const buttonHtml = device.registered 
+			            ? `<span class="badge bg-success me-2">등록됨</span>
+			               <button class="btn btn-danger btn-sm delete-btn" data-device-id="${device.deviceId}">삭제</button>`
+			            : `<button class="btn btn-success btn-sm register-btn" 
+			                        data-device-id="${device.deviceId}" 
+			                        data-label="${device.label}">등록하기</button>`;
             
             const row = `
                 <tr data-row-id="${device.deviceId}">
@@ -54,23 +55,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 3. '등록하기' 버튼 클릭 처리 함수
-    function handleTableButtonClick(event) {
-        if (event.target.classList.contains('register-btn')) {
-            const button = event.target;
-            const deviceId = button.dataset.deviceId;
-            const label = button.dataset.label;
+    // 3. 테이블 버튼 클릭 처리
+	function handleTableButtonClick(event) {
+	    const button = event.target;
 
-            // 모달에 정보 채우기
-            document.getElementById('modal-device-id').value = deviceId;
-            document.getElementById('modal-device-label').value = label;
-            document.getElementById('device-label-display').value = label;
-            document.getElementById('room-select').selectedIndex = 0;
+	    if (button.classList.contains('register-btn')) {
+	        const deviceId = button.dataset.deviceId;
+	        const label = button.dataset.label;
 
-            // 모달 띄우기
-            registrationModal.show();
-        }
-    }
+	        // 모달에 정보 채우기
+	        document.getElementById('modal-device-id').value = deviceId;
+	        document.getElementById('modal-device-label').value = label;
+	        document.getElementById('device-label-display').value = label;
+	        document.getElementById('room-select').selectedIndex = 0;
+
+	        registrationModal.show();
+	    } else if (button.classList.contains('delete-btn')) {
+	        const deviceId = button.dataset.deviceId;
+	        deleteDevice(deviceId);
+	    }
+	}
 
     // 4. 모달에서 '저장하기' 버튼 클릭 시 DB에 저장하는 함수
     function saveDevice() {
@@ -111,4 +115,40 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(error.message);
         });
     }
+	
+	function deleteDevice(deviceId) {
+	    // 사용자에게 정말 삭제할 것인지 확인받습니다.
+	    if (!confirm("정말로 이 기기를 관리 목록에서 삭제하시겠습니까?")) {
+	        return;
+	    }
+
+	    fetch(`/api/smartthings/delete/${deviceId}`, {
+	        method: 'DELETE'
+	    })
+	    .then(response => {
+	        if (!response.ok) {
+	            throw new Error('기기 삭제에 실패했습니다.');
+	        }
+	        return response.text();
+	    })
+	    .then(result => {
+	        console.log(result);
+	        alert("기기가 성공적으로 삭제되었습니다.");
+
+	        // 화면을 새로고침하지 않고 UI를 즉시 업데이트합니다.
+	        const row = tableBody.querySelector(`tr[data-row-id="${deviceId}"]`);
+	        if (row) {
+	            const deviceLabel = row.cells[0].innerText;
+	            const managementCell = row.cells[3];
+	            
+	            // '등록하기' 버튼으로 다시 변경
+	            managementCell.innerHTML = `<button class="btn btn-success btn-sm register-btn" 
+	                                                data-device-id="${deviceId}" 
+	                                                data-label="${deviceLabel}">등록하기</button>`;
+	        }
+	    })
+	    .catch(error => {
+	        alert(error.message);
+	    });
+	}
 });
