@@ -1,19 +1,22 @@
-// js/devices.js (전체 코드)
-
 document.addEventListener('DOMContentLoaded', function() {
     const loadButton = document.getElementById('load-ac-button');
     const tableBody = document.getElementById('devices-table-body');
+    
+    // Modal 인스턴스 생성
     const registrationModalEl = document.getElementById('registrationModal');
     const registrationModal = new bootstrap.Modal(registrationModalEl);
+    const deleteConfirmModalEl = document.getElementById('deleteConfirmModal');
+    const deleteConfirmModal = new bootstrap.Modal(deleteConfirmModalEl);
 
     // --- 이벤트 리스너 ---
     loadButton.addEventListener('click', loadAirConditioners);
     document.getElementById('save-device-button').addEventListener('click', saveDevice);
+    document.getElementById('confirm-delete-button').addEventListener('click', confirmDelete);
     tableBody.addEventListener('click', handleTableButtonClick);
 
     // --- 함수 정의 ---
 
-    // 1. 에어컨 목록 불러오기 함수
+    // 1. 에어컨 목록 불러오기 함수 (변경 없음)
     function loadAirConditioners() {
         tableBody.innerHTML = '<tr><td colspan="4" class="text-center">로딩 중...</td></tr>';
         fetch('/api/smartthings/getAirconDevices')
@@ -27,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // 2. 테이블 렌더링 함수
+    // 2. 테이블 렌더링 함수 (변경 없음)
     function renderTable(devices) {
         tableBody.innerHTML = '';
         if (devices.length === 0) {
@@ -48,22 +51,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${device.label}</td>
                     <td>${device.deviceId}</td>
                     <td>${device.deviceTypeName}</td>
-                    <td>${buttonHtml}</td>
+                    <td class="text-center">${buttonHtml}</td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', row);
         });
     }
 
-    // 3. 테이블 버튼 클릭 처리
+    // 3. 테이블 버튼 클릭 처리 (수정됨)
 	function handleTableButtonClick(event) {
 	    const button = event.target;
 
 	    if (button.classList.contains('register-btn')) {
 	        const deviceId = button.dataset.deviceId;
 	        const label = button.dataset.label;
-
-	        // 모달에 정보 채우기
+	        
 	        document.getElementById('modal-device-id').value = deviceId;
 	        document.getElementById('modal-device-label').value = label;
 	        document.getElementById('device-label-display').value = label;
@@ -72,19 +74,26 @@ document.addEventListener('DOMContentLoaded', function() {
 	        registrationModal.show();
 	    } else if (button.classList.contains('delete-btn')) {
 	        const deviceId = button.dataset.deviceId;
-	        deleteDevice(deviceId);
+            // 삭제할 ID를 모달에 임시 저장
+            deleteConfirmModalEl.dataset.deviceId = deviceId;
+	        deleteConfirmModal.show();
 	    }
 	}
 
-    // 4. 모달에서 '저장하기' 버튼 클릭 시 DB에 저장하는 함수
+    // 4. (신규) 삭제 모달의 '삭제하기' 버튼 클릭 시 최종 실행
+    function confirmDelete() {
+        const deviceId = deleteConfirmModalEl.dataset.deviceId;
+        deleteDevice(deviceId);
+    }
+
+    // 5. DB에 기기 저장 함수 (수정됨)
     function saveDevice() {
         const deviceId = document.getElementById('modal-device-id').value;
         const label = document.getElementById('modal-device-label').value;
         const room = document.getElementById('room-select').value;
-        const type = 3; // 에어컨 타입
-
+        
         if (room === "공간을 선택하세요...") {
-            alert("설치된 공간을 선택해주세요.");
+            alert("설치된 공간을 선택해주세요."); // 간단한 유효성 검사는 alert 유지
             return;
         }
 
@@ -96,59 +105,36 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(registrationData)
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('등록에 실패했습니다.');
-            }
+            if (!response.ok) { throw new Error('등록에 실패했습니다.'); }
             return response.text();
         })
         .then(result => {
             console.log(result);
             registrationModal.hide();
-
-            // 화면의 버튼 상태를 '등록됨'으로 즉시 업데이트
-            const row = tableBody.querySelector(`tr[data-row-id="${deviceId}"]`);
-            if (row) {
-                row.cells[3].innerHTML = `<button class="btn btn-secondary btn-sm" disabled>등록됨</button>`;
-            }
+            // ✨ 성공 후, 목록을 새로고침하여 UI를 갱신합니다.
+            loadAirConditioners(); 
         })
-        .catch(error => {
-            alert(error.message);
-        });
+        .catch(error => { alert(error.message); });
     }
 	
+	// 6. DB에서 기기 삭제 함수 (수정됨)
 	function deleteDevice(deviceId) {
-	    // 사용자에게 정말 삭제할 것인지 확인받습니다.
-	    if (!confirm("정말로 이 기기를 관리 목록에서 삭제하시겠습니까?")) {
-	        return;
-	    }
-
 	    fetch(`/api/smartthings/delete/${deviceId}`, {
 	        method: 'DELETE'
 	    })
 	    .then(response => {
-	        if (!response.ok) {
-	            throw new Error('기기 삭제에 실패했습니다.');
-	        }
+	        if (!response.ok) { throw new Error('기기 삭제에 실패했습니다.'); }
 	        return response.text();
 	    })
 	    .then(result => {
 	        console.log(result);
-	        alert("기기가 성공적으로 삭제되었습니다.");
-
-	        // 화면을 새로고침하지 않고 UI를 즉시 업데이트합니다.
-	        const row = tableBody.querySelector(`tr[data-row-id="${deviceId}"]`);
-	        if (row) {
-	            const deviceLabel = row.cells[0].innerText;
-	            const managementCell = row.cells[3];
-	            
-	            // '등록하기' 버튼으로 다시 변경
-	            managementCell.innerHTML = `<button class="btn btn-success btn-sm register-btn" 
-	                                                data-device-id="${deviceId}" 
-	                                                data-label="${deviceLabel}">등록하기</button>`;
-	        }
+	        deleteConfirmModal.hide();
+            // ✨ 성공 후, 목록을 새로고침하여 UI를 갱신합니다.
+	        loadAirConditioners(); 
 	    })
 	    .catch(error => {
-	        alert(error.message);
-	    });
+            deleteConfirmModal.hide(); // 에러 발생 시에도 모달은 닫아줍니다.
+            alert(error.message);
+        });
 	}
 });

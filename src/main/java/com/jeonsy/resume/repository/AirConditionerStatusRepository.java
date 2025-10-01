@@ -1,5 +1,7 @@
 package com.jeonsy.resume.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +13,9 @@ import com.jeonsy.resume.entity.T_AC_STATUS;
 public interface AirConditionerStatusRepository extends JpaRepository<T_AC_STATUS, Long> {
 
     Optional<T_AC_STATUS> findTopByDeviceIdOrderByDataCollectionTimestampDesc(String deviceId);
+    List<T_AC_STATUS> findByDeviceIdAndDataCollectionTimestampBetweenOrderByDataCollectionTimestampDesc(
+            String deviceId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }
