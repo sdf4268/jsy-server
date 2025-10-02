@@ -1,5 +1,6 @@
 package com.jeonsy.resume.api;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -18,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jeonsy.resume.dto.AirSensorDto;
+import com.jeonsy.resume.dto.DeviceControlDto;
 import com.jeonsy.resume.dto.DeviceDto;
 import com.jeonsy.resume.dto.DeviceRegistrationDto;
+import com.jeonsy.resume.dto.DeviceStatusDto;
 import com.jeonsy.resume.dto.ObdDataDto;
 import com.jeonsy.resume.entity.T_AC_STATUS;
 import com.jeonsy.resume.entity.T_AIRSENSOR;
@@ -135,6 +138,32 @@ public class DeviceController {
 	public ResponseEntity<List<T_LABEL>> getRegisteredDevices() {
 		return ResponseEntity.ok(labelRepository.findByType(3));
 	}
+	
+    /**
+     * 제어 페이지용: 모든 등록된 기기의 현재 상태를 반환하는 API
+     */
+    @GetMapping("/smartthings/devices-with-status")
+    public ResponseEntity<?> getDevicesWithStatus() {
+        try {
+            List<DeviceStatusDto> statuses = smartThingsApiService.getManagedAirConditionersWithStatus();
+            return ResponseEntity.ok(statuses);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("기기 상태 조회 중 오류 발생");
+        }
+    }
+    
+    @PostMapping("/smartthings/control")
+    public ResponseEntity<String> controlDevice(@RequestBody DeviceControlDto controlDto) {
+        try {
+            // ❗️서비스 메소드 호출 부분을 DTO 객체 통째로 넘겨주도록 수정
+            smartThingsApiService.controlAirConditioner(controlDto);
+            return ResponseEntity.ok("명령을 성공적으로 보냈습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("명령 전송 중 오류 발생: " + e.getMessage());
+        }
+    }
 
 	@GetMapping("/smartthings/logs")
 	public ResponseEntity<List<T_AC_STATUS>> getAirconLogs(@RequestParam String deviceId,
