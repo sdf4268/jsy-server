@@ -271,4 +271,145 @@ document.addEventListener('DOMContentLoaded', function() {
 		searchButton.addEventListener('click', searchLogs);
 		initializeDataPage();
 	}
+	
+	// ===============================================================
+	// ## 'st-control.html' (기기 제어) 페이지를 위한 코드
+	// ===============================================================
+	// 'control-cards-container' 요소가 있는 경우에만 이 코드를 실행합니다.
+	if (document.getElementById('control-cards-container')) {
+	    const container = document.getElementById('control-cards-container');
+	    const loadingMessage = document.getElementById('loading-message');
+
+	    // 제어 페이지 초기화 함수
+	    function initializeControlPage() {
+	        loadingMessage.style.display = 'block';
+	        container.innerHTML = ''; // 기존 카드 삭제
+	        container.appendChild(loadingMessage);
+
+	        fetch('/api/smartthings/devices-with-status')
+	            .then(response => response.json())
+	            .then(devices => {
+	                loadingMessage.style.display = 'none';
+	                if (devices.length === 0) {
+	                    container.innerHTML = '<div class="col-12"><p class="text-center text-muted">등록된 기기가 없습니다.</p></div>';
+	                    return;
+	                }
+	                devices.forEach(device => {
+	                    container.insertAdjacentHTML('beforeend', createDeviceCardHtml(device));
+	                });
+	            })
+	            .catch(error => {
+	                console.error("Error fetching devices with status:", error);
+	                loadingMessage.style.display = 'none';
+	                container.innerHTML = '<div class="col-12"><p class="text-center text-danger">기기 목록을 불러오는 중 오류가 발생했습니다.</p></div>';
+	            });
+	    }
+
+	    // 기기 카드 HTML을 생성하는 함수
+	    function createDeviceCardHtml(device) {
+	        // 현재 상태 표시 (상태가 null일 경우 대비)
+	        const power = device.power || 'unknown';
+	        const mode = device.mode || 'N/A';
+	        const currentTemp = device.currentTemperature != null ? `${device.currentTemperature}°C` : 'N/A';
+	        const targetTemp = device.targetTemperature != null ? `${device.targetTemperature}°C` : 'N/A';
+	        
+	        // 제어 UI용 초기값 설정
+	        const isChecked = power === 'on' ? 'checked' : '';
+	        const selectedMode = device.mode || 'cool';
+	        const selectedTemp = Math.round(device.targetTemperature || 24);
+
+	        // 온도 옵션 HTML 생성 (16~30도)
+	        let tempOptions = '';
+	        for (let i = 16; i <= 30; i++) {
+	            tempOptions += `<option value="${i}" ${i === selectedTemp ? 'selected' : ''}>${i}°C</option>`;
+	        }
+	        
+	        return `
+	            <div class="col">
+	                <div class="card h-100" data-device-id="${device.deviceId}">
+	                    <div class="card-header fw-bold">${device.label}</div>
+	                    <div class="card-body">
+	                        <h6 class="card-subtitle mb-2 text-muted">현재 상태</h6>
+	                        <p class="card-text d-flex justify-content-around">
+	                            <span>전원: <span class="badge bg-${power === 'on' ? 'success' : 'secondary'}">${power}</span></span>
+	                            <span>모드: <span class="badge bg-info">${mode}</span></span>
+	                            <span>현재온도: <span class="badge bg-primary">${currentTemp}</span></span>
+	                            <span>목표온도: <span class="badge bg-danger">${targetTemp}</span></span>
+	                        </p>
+	                        <hr>
+	                        <h6 class="card-subtitle mb-2 text-muted">제어</h6>
+	                        <div class="row g-2 align-items-center">
+	                            <div class="col-4">
+	                                <div class="form-check form-switch form-check-lg">
+	                                    <input class="form-check-input control-power" type="checkbox" ${isChecked}>
+	                                    <label class="form-check-label small">전원</label>
+	                                </div>
+	                            </div>
+	                            <div class="col-4">
+	                                <select class="form-select form-select-sm control-mode">
+	                                    <option value="cool" ${selectedMode === 'cool' ? 'selected' : ''}>냉방</option>
+	                                    <option value="wind" ${selectedMode === 'wind' ? 'selected' : ''}>청정</option>
+	                                    <option value="aIComfort" ${selectedMode === 'aIComfort' ? 'selected' : ''}>AI모드</option>
+	                                </select>
+	                            </div>
+	                            <div class="col-4">
+	                                <select class="form-select form-select-sm control-temp">${tempOptions}</select>
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <div class="card-footer text-end">
+	                        <button class="btn btn-primary btn-sm apply-btn">적용</button>
+	                    </div>
+	                </div>
+	            </div>
+	        `;
+	    }
+
+	    // '적용' 버튼 클릭 이벤트 처리 (이벤트 위임)
+	    container.addEventListener('click', function(event) {
+	        if (!event.target.classList.contains('apply-btn')) {
+	            return; // '적용' 버튼이 아니면 무시
+	        }
+
+	        const card = event.target.closest('.card');
+	        const deviceId = card.dataset.deviceId;
+
+	        // 카드 내의 제어 값들 읽어오기
+	        const powerState = card.querySelector('.control-power').checked ? 'on' : 'off';
+	        const mode = card.querySelector('.control-mode').value;
+	        const temperature = parseInt(card.querySelector('.control-temp').value, 10);
+	        
+	        const controlData = { deviceId, powerState, mode, temperature };
+
+	        // 버튼을 '적용 중...'으로 바꾸고 비활성화
+	        event.target.disabled = true;
+	        event.target.textContent = '적용 중...';
+
+	        // 서버에 제어 명령 보내기
+	        fetch('/api/smartthings/control', {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify(controlData)
+	        })
+	        .then(response => {
+	            if (!response.ok) throw new Error('명령 전송에 실패했습니다.');
+	            return response.text();
+	        })
+	        .then(result => {
+	            console.log(result);
+	            // 2초 후 목록을 새로고침하여 실제 변경된 상태를 반영
+	            setTimeout(initializeControlPage, 2000);
+	        })
+	        .catch(error => {
+	            console.error('Control command failed:', error);
+	            alert(error.message);
+	            // 실패 시 버튼 원상복구
+	            event.target.disabled = false;
+	            event.target.textContent = '적용';
+	        });
+	    });
+
+	    // 페이지 로드 시 초기화 함수 실행
+	    initializeControlPage();
+	}
 });
