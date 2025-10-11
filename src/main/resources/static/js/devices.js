@@ -412,4 +412,72 @@ document.addEventListener('DOMContentLoaded', function() {
 	    // 페이지 로드 시 초기화 함수 실행
 	    initializeControlPage();
 	}
+	
+	if (document.getElementById('work-log-list')) {
+	    const logList = document.getElementById('work-log-list');
+	    const contentInput = document.getElementById('new-log-content');
+	    const statusInput = document.getElementById('new-log-status');
+	    const addButton = document.getElementById('add-log-btn');
+
+	    // 작업 로그 상태에 따른 뱃지 색상
+	    const statusBadges = {
+	        "완료": "bg-success",
+	        "진행중": "bg-primary",
+	        "예정": "bg-warning text-dark"
+	    };
+
+	    // 작업 로그 불러오기 함수
+	    function loadWorkLogs() {
+	        fetch('/api/worklogs')
+	            .then(response => response.json())
+	            .then(logs => {
+	                logList.innerHTML = ''; // 기존 목록 비우기
+	                logs.forEach(log => {
+	                    const badgeColor = statusBadges[log.status] || 'bg-secondary';
+	                    const logHtml = `
+	                        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+	                            <span>${log.content}</span>
+	                            <span class="badge ${badgeColor}">${log.status}</span>
+	                        </div>
+	                    `;
+	                    logList.insertAdjacentHTML('beforeend', logHtml);
+	                });
+	            });
+	    }
+
+	    // 새 작업 로그 추가 함수
+	    function addWorkLog() {
+	        const content = contentInput.value.trim();
+	        const status = statusInput.value;
+
+	        if (!content) {
+	            alert('작업 내용을 입력하세요.');
+	            return;
+	        }
+
+	        fetch('/api/worklogs', {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify({ content, status })
+	        })
+	        .then(response => response.json())
+	        .then(() => {
+	            contentInput.value = ''; // 입력창 비우기
+	            loadWorkLogs(); // 목록 새로고침
+	        })
+	        .catch(error => console.error("Error adding log:", error));
+	    }
+
+	    addButton.addEventListener('click', addWorkLog);
+	    
+	    // Enter 키로도 추가 가능하도록
+	    contentInput.addEventListener('keypress', function(event) {
+	        if (event.key === 'Enter') {
+	            addWorkLog();
+	        }
+	    });
+
+	    // 페이지 로드 시 최초로 로그 불러오기
+	    loadWorkLogs();
+	}
 });

@@ -48,4 +48,5 @@ h1, h2 {
     flex-grow: 1;
     height: 100vh; /* 메인 콘텐츠도 전체 화면 높이를 차지 */
     overflow-y: auto; /* 콘텐츠가 길어지면 이 영역만 스크롤 생성 */
+	display: flex;
 }
